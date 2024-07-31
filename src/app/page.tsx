@@ -1,95 +1,201 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import styled from "styled-components";
 
 export default function Home() {
+  const [trains, setTrains] = useState<any>();
+  const [buses, setBuses] = useState<any>();
+  const [stops, setStops] = useState<any>();
+
+  const getBounds = useCallback(() => {
+    if (!stops) throw new Error("no stops");
+
+    const latlongs: { lat: number; lon: number }[] = stops.elements.map(
+      (p: any) => ({
+        lat: p.lat,
+        lon: p.lon,
+      })
+    );
+
+    const minLat = latlongs.reduce(
+      (prev, current) => Math.min(prev, current.lat),
+      Infinity
+    );
+    const maxLat = latlongs.reduce(
+      (prev, current) => Math.max(prev, current.lat),
+      -Infinity
+    );
+    const minLon = latlongs.reduce(
+      (prev, current) => Math.min(prev, current.lon),
+      Infinity
+    );
+    const maxLon = latlongs.reduce(
+      (prev, current) => Math.max(prev, current.lon),
+      -Infinity
+    );
+
+    const width = maxLon - minLon;
+    const height = maxLat - minLat;
+
+    return {
+      minLat,
+      minLon,
+      width,
+      height,
+    };
+  }, [stops]);
+
+  useEffect(() => {
+    fetch(`/api/trains`)
+      .then((res) => res.json())
+      .then((data) => setTrains(data));
+  }, []);
+
+  useEffect(() => {
+    fetch(`/api/buses`)
+      .then((res) => res.json())
+      .then((data) => setBuses(data));
+  }, []);
+
+  useEffect(() => {
+    fetch(`/api/stops`)
+      .then((res) => res.json())
+      .then((data) => setStops(data));
+  }, []);
+
+  if (!trains || !buses || !stops) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          width: "100vw",
+          height: "100vh",
+          justifyContent: "center",
+        }}
+      >
+        <span>Warming up the neon glow...</span>
+      </div>
+    );
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
+    <Main>
+      <Display>
         <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
+          {stops.elements.map((stop: any) => (
+            <Marker
+              lat={stop.lat}
+              lon={stop.lon}
+              key={stop.id}
+              type="stop"
+              getBounds={getBounds}
             />
-          </a>
+          ))}
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        <div>
+          {buses.Trips.Trip.map((trip: any) => (
+            <Marker
+              lat={trip.Latitude}
+              lon={trip.Longitude}
+              key={trip.TripNumber}
+              type="bus"
+              getBounds={getBounds}
+            />
+          ))}
+        </div>
+        <div>
+          {trains.Trips.Trip.map((trip: any) => (
+            <Marker
+              lat={trip.Latitude}
+              lon={trip.Longitude}
+              key={trip.TripNumber}
+              type="train"
+              getBounds={getBounds}
+            />
+          ))}
+        </div>
+      </Display>
+    </Main>
   );
 }
+
+const Marker: React.FC<{
+  lat: number;
+  lon: number;
+  type: string;
+  getBounds: () => any;
+  children?: React.ReactNode;
+}> = ({ lat, lon, getBounds, type, children }) => {
+  const getColour = () => {
+    switch (type) {
+      case "train":
+        return "#03cd09";
+      case "bus":
+        return "green";
+      case "stop":
+        return "white";
+    }
+  };
+  const getStyle = useCallback(() => {
+    switch (type) {
+      case "train":
+        const trainWidth = 11;
+        return {
+          border: `3px solid ${getColour()}`,
+          minHeight: trainWidth,
+          minWidth: trainWidth,
+          borderRadius: 1000,
+          boxShadow: `0 0 5px 0px ${getColour()}`,
+          backgroundColor: getColour(),
+        };
+      case "bus":
+        const busWidth = 7;
+        return {
+          border: `2px solid ${getColour()}`,
+          minHeight: busWidth,
+          minWidth: busWidth,
+          borderRadius: 1000,
+          boxShadow: `0 0 3px 0px ${getColour()}`,
+          backgroundColor: getColour(),
+        };
+      case "stop":
+        const stopWidth = 3;
+        return {
+          border: `1px solid ${getColour()}`,
+          height: stopWidth,
+          width: stopWidth,
+          borderRadius: 1000,
+          boxShadow: `0 0 2px 0px ${getColour()}`,
+        };
+    }
+  }, [type]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: `${(100 * (lon - getBounds().minLon)) / getBounds().width}%`,
+        bottom: `${(100 * (lat - getBounds().minLat)) / getBounds().height}%`,
+        ...getStyle(),
+        transform: "translate(-50%, 50%)",
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+const Main = styled.main`
+  background-color: black;
+  width: 100%;
+  height: calc(100vh - 80px);
+  padding: 40px;
+`;
+
+const Display = styled.div`
+  height: 100%;
+  width: 100%;
+  position: relative;
+`;
