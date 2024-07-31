@@ -7,6 +7,7 @@ export default function Home() {
   const [trains, setTrains] = useState<any>();
   const [buses, setBuses] = useState<any>();
   const [stops, setStops] = useState<any>();
+  const [stations, setStations] = useState<any>();
 
   const getBounds = useCallback(() => {
     if (!stops) throw new Error("no stops");
@@ -64,7 +65,13 @@ export default function Home() {
       .then((data) => setStops(data));
   }, []);
 
-  if (!trains || !buses || !stops) {
+  useEffect(() => {
+    fetch(`/api/stations`)
+      .then((res) => res.json())
+      .then((data) => setStations(data));
+  }, []);
+
+  if (!trains || !buses || !stops || !stations) {
     return (
       <div
         style={{
@@ -116,6 +123,17 @@ export default function Home() {
             />
           ))}
         </div>
+        <div>
+          {stations.elements.map((station: any) => (
+            <Marker
+              lat={station.lat}
+              lon={station.lon}
+              key={station.id}
+              type="station"
+              getBounds={getBounds}
+            />
+          ))}
+        </div>
       </Display>
     </Main>
   );
@@ -128,7 +146,7 @@ const Marker: React.FC<{
   getBounds: () => any;
   children?: React.ReactNode;
 }> = ({ lat, lon, getBounds, type, children }) => {
-  const getColour = () => {
+  const getColour = useCallback(() => {
     switch (type) {
       case "train":
         return "#03cd09";
@@ -136,8 +154,11 @@ const Marker: React.FC<{
         return "green";
       case "stop":
         return "white";
+      case "station":
+        return "#03cd09";
     }
-  };
+  }, [type]);
+
   const getStyle = useCallback(() => {
     switch (type) {
       case "train":
@@ -151,7 +172,7 @@ const Marker: React.FC<{
           backgroundColor: getColour(),
         };
       case "bus":
-        const busWidth = 7;
+        const busWidth = 8;
         return {
           border: `2px solid ${getColour()}`,
           minHeight: busWidth,
@@ -169,8 +190,17 @@ const Marker: React.FC<{
           borderRadius: 1000,
           boxShadow: `0 0 2px 0px ${getColour()}`,
         };
+      case "station":
+        const stationWidth = 6;
+        return {
+          border: `1px solid ${getColour()}`,
+          height: stationWidth,
+          width: stationWidth,
+          borderRadius: 1000,
+          boxShadow: `0 0 5px 0px ${getColour()}`,
+        };
     }
-  }, [type]);
+  }, [type, getColour]);
 
   return (
     <div
