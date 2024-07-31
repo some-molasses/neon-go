@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
+import { GO } from "./server/types/service-at-a-glance";
+import { Overpass } from "./server/types/overpass";
 
 export default function Home() {
-  const [trains, setTrains] = useState<any>();
-  const [buses, setBuses] = useState<any>();
-  const [stops, setStops] = useState<any>();
-  const [stations, setStations] = useState<any>();
+  const [trains, setTrains] = useState<GO.ServiceataGlance.Trains.Response>();
+  const [buses, setBuses] = useState<GO.ServiceataGlance.Buses.Response>();
+  const [stops, setStops] = useState<Overpass.Response>();
+  const [stations, setStations] = useState<Overpass.Response>();
 
   const getBounds = useCallback(() => {
     if (!stops) throw new Error("no stops");
@@ -49,13 +51,13 @@ export default function Home() {
 
   useEffect(() => {
     fetch(`/api/trains`)
-      .then((res) => res.json())
+      .then((res) => res.json() as Promise<GO.ServiceataGlance.Trains.Response>)
       .then((data) => setTrains(data));
   }, []);
 
   useEffect(() => {
     fetch(`/api/buses`)
-      .then((res) => res.json())
+      .then((res) => res.json() as Promise<GO.ServiceataGlance.Buses.Response>)
       .then((data) => setBuses(data));
   }, []);
 
@@ -91,7 +93,7 @@ export default function Home() {
     <Main>
       <Display>
         <div>
-          {stops.elements.map((stop: any) => (
+          {stops.elements.map((stop) => (
             <Marker
               lat={stop.lat}
               lon={stop.lon}
@@ -102,7 +104,7 @@ export default function Home() {
           ))}
         </div>
         <div>
-          {buses.Trips.Trip.map((trip: any) => (
+          {buses.Trips.Trip.map((trip) => (
             <Marker
               lat={trip.Latitude}
               lon={trip.Longitude}
@@ -113,7 +115,7 @@ export default function Home() {
           ))}
         </div>
         <div>
-          {trains.Trips.Trip.map((trip: any) => (
+          {trains.Trips.Trip.map((trip) => (
             <Marker
               lat={trip.Latitude}
               lon={trip.Longitude}
@@ -124,7 +126,7 @@ export default function Home() {
           ))}
         </div>
         <div>
-          {stations.elements.map((station: any) => (
+          {stations.elements.map((station) => (
             <Marker
               lat={station.lat}
               lon={station.lon}

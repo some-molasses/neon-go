@@ -1,10 +1,13 @@
+import { Overpass } from "@/app/server/types/overpass";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
  * @param start The start point in format `"lat,lon"`
  * @returns the betterWalk for the given start and destination points
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(
+  request: NextRequest
+): Promise<NextResponse<Overpass.Response>> {
   const promise = await fetch(`https://overpass-api.de/api/interpreter`, {
     method: "POST",
     body: `[out:json][timeout:25];
