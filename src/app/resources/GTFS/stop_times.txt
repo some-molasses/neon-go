@@ -1,0 +1,13 @@
+trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type,stop_headsign
+20240830-MI-2722,09:03:00,09:03:00,UN,35,0,0,
+20240830-MI-2722,08:42:00,08:42:00,KP,19,0,0,Kipling GO 08:42 - Union Station 09:03
+20240830-MI-2722,08:34:00,08:34:00,DI,17,0,0,Dixie GO 08:34 - Union Station 09:03
+20240830-MI-2722,08:29:00,08:29:00,CO,15,0,0,Cooksville GO 08:29 - Union Station 09:03
+20240830-MI-2722,08:23:00,08:23:00,ER,13,0,0,Erindale GO 08:23 - Union Station 09:03
+20240830-MI-2722,08:18:00,08:18:00,SR,11,0,0,Streetsville GO 08:18 - Union Station 09:03
+20240830-MI-2722,08:11:00,08:11:00,ME,8,0,0,Meadowvale GO 08:11 - Union Station 09:03
+20240830-MI-2722,08:06:00,08:06:00,LS,6,0,0,Lisgar GO 08:06 - Union Station 09:03
+20240830-MI-2722,07:58:00,07:58:00,ML,1,0,0,Milton GO 07:58 - Union Station 09:03
+20240830-LE-9019,13:15:00,13:15:00,UN,28,0,0,
+
+remaining lines deleted because the file was 64 MB big. I'll need a DB if I want to do anything with this data at scale.

@@ -1,0 +1,16 @@
+﻿fare_id,origin_id,destination_id
+98-98,98,98
+98-97,98,97
+97-98,97,98
+97-97,97,97
+98-96,98,96
+96-98,96,98
+97-96,97,96
+96-97,96,97
+96-96,96,96
+98-95,98,95
+95-98,95,98
+97-95,97,95
+95-97,95,97
+
+deleted more lines due to probably not having any applicable purpose

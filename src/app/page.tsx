@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { Metrolinx } from "./server/types/service-at-a-glance";
 import { Overpass } from "./server/types/overpass";
 
+const UPDATE_INTERVAL = 2 * 60 * 1000;
+
 export default function Home() {
   const [trains, setTrains] =
     useState<Metrolinx.ServiceataGlance.Trains.Response>();
@@ -12,6 +14,8 @@ export default function Home() {
     useState<Metrolinx.ServiceataGlance.Buses.Response>();
   const [stops, setStops] = useState<Overpass.Response>();
   const [stations, setStations] = useState<Overpass.Response>();
+
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const getBounds = useCallback(() => {
     if (!stops) throw new Error("no stops");
@@ -51,35 +55,37 @@ export default function Home() {
     };
   }, [stops]);
 
-  useEffect(() => {
-    fetch(`/api/trains`)
-      .then(
-        (res) =>
-          res.json() as Promise<Metrolinx.ServiceataGlance.Trains.Response>
-      )
-      .then((data) => setTrains(data));
+  const fetchAll = useCallback(async () => {
+    const endpoints: [string, (newValue: any) => void][] = [
+      ["trains", setTrains],
+      ["buses", setBuses],
+      ["stops", setStops],
+      ["stations", setStations],
+    ];
+
+    await Promise.all(
+      endpoints.map(([endpoint, setter]) => {
+        fetch(`/api/${endpoint}`)
+          .then((res) => res.json())
+          .then((data) => setter(data));
+      })
+    );
+
+    setLastUpdated(new Date());
   }, []);
 
   useEffect(() => {
-    fetch(`/api/buses`)
-      .then(
-        (res) =>
-          res.json() as Promise<Metrolinx.ServiceataGlance.Buses.Response>
-      )
-      .then((data) => setBuses(data));
-  }, []);
+    fetchAll();
+  }, [fetchAll]);
 
+  // update loop
   useEffect(() => {
-    fetch(`/api/stops`)
-      .then((res) => res.json())
-      .then((data) => setStops(data));
-  }, []);
+    const interval = setInterval(() => {
+      fetchAll();
+    }, UPDATE_INTERVAL);
 
-  useEffect(() => {
-    fetch(`/api/stations`)
-      .then((res) => res.json())
-      .then((data) => setStations(data));
-  }, []);
+    return () => clearInterval(interval);
+  });
 
   if (!trains || !buses || !stops || !stations) {
     return (
@@ -112,6 +118,17 @@ export default function Home() {
           ))}
         </div>
         <div>
+          {stations.elements.map((station) => (
+            <Marker
+              lat={station.lat}
+              lon={station.lon}
+              key={station.id}
+              type="station"
+              getBounds={getBounds}
+            />
+          ))}
+        </div>
+        <div>
           {buses.Trips.Trip.map((trip) => (
             <Marker
               lat={trip.Latitude}
@@ -130,24 +147,47 @@ export default function Home() {
               key={trip.TripNumber}
               type="train"
               getBounds={getBounds}
-            />
+            ></Marker>
           ))}
         </div>
-        <div>
-          {stations.elements.map((station) => (
-            <Marker
-              lat={station.lat}
-              lon={station.lon}
-              key={station.id}
-              type="station"
-              getBounds={getBounds}
-            />
-          ))}
-        </div>
+        <TimeDisplay lastUpdated={lastUpdated} />
       </Display>
     </Main>
   );
 }
+
+const TimeDisplay: React.FC<{ lastUpdated: Date }> = ({ lastUpdated }) => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  });
+
+  return (
+    <TimeDisplayContainer>
+      <CurrentTime>{time.toLocaleTimeString()}</CurrentTime>
+      Last updated: {lastUpdated.toLocaleTimeString()}
+    </TimeDisplayContainer>
+  );
+};
+
+const TimeDisplayContainer = styled.div`
+  position: absolute;
+  right: 0;
+  top: 70%;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+`;
+
+const CurrentTime = styled.span`
+  font-size: 40pt;
+`;
 
 const Marker: React.FC<{
   lat: number;
