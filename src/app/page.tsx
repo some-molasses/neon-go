@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
-import { GO } from "./server/types/service-at-a-glance";
+import { Metrolinx } from "./server/types/service-at-a-glance";
 import { Overpass } from "./server/types/overpass";
 
 export default function Home() {
-  const [trains, setTrains] = useState<GO.ServiceataGlance.Trains.Response>();
-  const [buses, setBuses] = useState<GO.ServiceataGlance.Buses.Response>();
+  const [trains, setTrains] =
+    useState<Metrolinx.ServiceataGlance.Trains.Response>();
+  const [buses, setBuses] =
+    useState<Metrolinx.ServiceataGlance.Buses.Response>();
   const [stops, setStops] = useState<Overpass.Response>();
   const [stations, setStations] = useState<Overpass.Response>();
 
@@ -51,13 +53,19 @@ export default function Home() {
 
   useEffect(() => {
     fetch(`/api/trains`)
-      .then((res) => res.json() as Promise<GO.ServiceataGlance.Trains.Response>)
+      .then(
+        (res) =>
+          res.json() as Promise<Metrolinx.ServiceataGlance.Trains.Response>
+      )
       .then((data) => setTrains(data));
   }, []);
 
   useEffect(() => {
     fetch(`/api/buses`)
-      .then((res) => res.json() as Promise<GO.ServiceataGlance.Buses.Response>)
+      .then(
+        (res) =>
+          res.json() as Promise<Metrolinx.ServiceataGlance.Buses.Response>
+      )
       .then((data) => setBuses(data));
   }, []);
 
@@ -170,7 +178,7 @@ const Marker: React.FC<{
           minHeight: trainWidth,
           minWidth: trainWidth,
           borderRadius: 1000,
-          boxShadow: `0 0 5px 0px ${getColour()}`,
+          boxShadow: `0 0 15px 0px ${getColour()}`,
           backgroundColor: getColour(),
         };
       case "bus":
@@ -180,7 +188,7 @@ const Marker: React.FC<{
           minHeight: busWidth,
           minWidth: busWidth,
           borderRadius: 1000,
-          boxShadow: `0 0 3px 0px ${getColour()}`,
+          boxShadow: `0 0 13px 0px ${getColour()}`,
           backgroundColor: getColour(),
         };
       case "stop":
@@ -190,7 +198,7 @@ const Marker: React.FC<{
           height: stopWidth,
           width: stopWidth,
           borderRadius: 1000,
-          boxShadow: `0 0 2px 0px ${getColour()}`,
+          boxShadow: `0 0 8px 0px ${getColour()}`,
         };
       case "station":
         const stationWidth = 6;
@@ -199,7 +207,7 @@ const Marker: React.FC<{
           height: stationWidth,
           width: stationWidth,
           borderRadius: 1000,
-          boxShadow: `0 0 5px 0px ${getColour()}`,
+          boxShadow: `0 0 15px 0px ${getColour()}`,
         };
     }
   }, [type, getColour]);

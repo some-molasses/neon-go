@@ -1,4 +1,4 @@
-export namespace GO {
+export namespace Metrolinx {
   export namespace ServiceataGlance {
     interface ServiceResponse<TripType> {
       Metadata: {
