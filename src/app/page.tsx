@@ -150,13 +150,13 @@ export default function Home() {
             ></Marker>
           ))}
         </div>
-        <TimeDisplay lastUpdated={lastUpdated} />
+        <TimeDisplay lastUpdated={trains.Metadata.TimeStamp} />
       </Display>
     </Main>
   );
 }
 
-const TimeDisplay: React.FC<{ lastUpdated: Date }> = ({ lastUpdated }) => {
+const TimeDisplay: React.FC<{ lastUpdated: string }> = ({ lastUpdated }) => {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -170,7 +170,7 @@ const TimeDisplay: React.FC<{ lastUpdated: Date }> = ({ lastUpdated }) => {
   return (
     <TimeDisplayContainer>
       <CurrentTime>{time.toLocaleTimeString()}</CurrentTime>
-      Last updated: {lastUpdated.toLocaleTimeString()}
+      Last updated: {lastUpdated}
     </TimeDisplayContainer>
   );
 };
